@@ -27,10 +27,18 @@ class DataStore:
         self.projects = [Project.from_dict(p) for p in d.get("projects", [])]
 
     def save(self):
-        """Persist current in-memory users and projects to the JSON file."""
+        """Persist current in-memory users and projects to the JSON file using atomic replace."""
         out = {"users": [u.to_dict() for u in self.users], "projects": [p.to_dict() for p in self.projects]}
-        with open(self.path, "w", encoding="utf-8") as f:
+        dirpath = os.path.dirname(self.path)
+        if dirpath and not os.path.exists(dirpath):
+            os.makedirs(dirpath, exist_ok=True)
+        # Write to a temp file then atomically replace
+        tmp_path = self.path + ".tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(out, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, self.path)
 
     def _create_empty(self):
         """Create an empty data file and initialize in-memory lists."""
@@ -43,8 +51,20 @@ class DataStore:
         self.users.append(user)
 
     def add_project(self, project: Project):
-        """Add a Project instance to the store."""
+        """Add a Project instance to the store and register it with owner user."""
         self.projects.append(project)
+        # Update owner's project list if user exists
+        if project.owner_id is not None:
+            owner = self.find_user_by_id(project.owner_id)
+            if owner:
+                owner.add_project(project.id)
+
+    def find_user_by_id(self, id: int) -> User | None:
+        """Return a User by numeric id or None."""
+        for u in self.users:
+            if u.id == id:
+                return u
+        return None
 
     def add_task(self, project_id: int, task: Task):
         """Attach a Task to the given project by id."""

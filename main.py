@@ -29,7 +29,7 @@ def build_parser():
     t1 = sub.add_parser("add-task", help="Add task to a project")
     t1.add_argument("--project", required=True)
     t1.add_argument("--title", required=True)
-    t1.add_argument("--assigned", required=False, help="Assigned user name")
+    t1.add_argument("--assigned", required=False, help="Assigned user name(s)", nargs="*")
 
     t2 = sub.add_parser("list-tasks", help="List tasks for a project")
     t2.add_argument("--project", required=True)
@@ -37,6 +37,11 @@ def build_parser():
     c = sub.add_parser("complete-task", help="Mark a task complete")
     c.add_argument("--project", required=True)
     c.add_argument("--task-id", required=True)
+
+    ac = sub.add_parser("assign-contributor", help="Assign a contributor to a task")
+    ac.add_argument("--project", required=True)
+    ac.add_argument("--task-id", required=True)
+    ac.add_argument("--assigned", required=True, help="User name to assign")
 
     s = sub.add_parser("search-projects", help="Search projects by user")
     s.add_argument("--user", required=True)
@@ -86,14 +91,32 @@ def main():
         if not project:
             print("Project not found")
             return
-        assigned = None
+        assigned_ids = []
         if args.assigned:
-            assigned_user = ds.find_user_by_name(args.assigned)
-            assigned = assigned_user.id if assigned_user else None
-        t = Task(title=args.title, assigned_to=assigned)
+            for name in args.assigned:
+                assigned_user = ds.find_user_by_name(name)
+                if assigned_user:
+                    assigned_ids.append(assigned_user.id)
+        t = Task(title=args.title, assigned_to=assigned_ids or None)
         ds.add_task(project.id, t)
         ds.save()
         print(f"Added task: {t}")
+
+    elif args.command == "assign-contributor":
+        p = ds.find_project_by_title(args.project)
+        if not p:
+            print("Project not found")
+            return
+        user = ds.find_user_by_name(args.assigned)
+        if not user:
+            print("User not found")
+            return
+        ok = p.assign_contributor(int(args.task_id), user.id)
+        if ok:
+            ds.save()
+            print("Contributor assigned")
+        else:
+            print("Task not found")
 
     elif args.command == "list-tasks":
         project = ds.find_project_by_title(args.project)

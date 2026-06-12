@@ -21,6 +21,24 @@ class Project:
         self.owner_id = owner_id
         self.tasks = tasks or []
 
+    def assign_contributor(self, task_id: int, user_id: int) -> bool:
+        """Assign a contributor (user id) to a task within this project.
+
+        Returns True if task found and user added, False otherwise.
+        """
+        for t in self.tasks:
+            if t.id == task_id:
+                t.add_contributor(user_id)
+                return True
+        return False
+
+    def get_task(self, task_id: int) -> Task | None:
+        """Return the Task with the given id or None."""
+        for t in self.tasks:
+            if t.id == task_id:
+                return t
+        return None
+
     def add_task(self, task: Task):
         """Attach a Task instance to this project."""
         self.tasks.append(task)
