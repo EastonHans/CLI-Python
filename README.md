@@ -32,5 +32,25 @@ Tests
 Run unit tests with:
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
+pytest tests/
 ```
+
+Run with coverage:
+
+```bash
+pytest --cov=. tests/
+```
+
+## All Commands
+
+| Command | Description |
+|---|---|
+| `add-user` | Create a new user |
+| `add-project` | Create a project for a user |
+| `add-task` | Add a task to a project |
+| `list-users` | List all users |
+| `list-projects` | List all or filtered projects |
+| `list-tasks` | List tasks for a project |
+| `complete-task` | Mark a task as done |
+| `assign-contributor` | Assign a user to a task |
+| `search-projects` | Search projects by user |
