@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cli-python-project-tracker"
+version = "1.0.0"
+description = "CLI project tracker for Moringa module"
+authors = [ { name = "Student", email = "student@example.com" } ]
+
+[tool.black]
+line-length = 88

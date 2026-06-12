@@ -5,6 +5,9 @@ from models.user import User
 from models.project import Project
 from models.task import Task
 from utils.helpers import pretty_print, parse_date
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def build_parser():
@@ -49,48 +52,46 @@ def build_parser():
     return parser
 
 
-def main():
-    parser = build_parser()
-    args = parser.parse_args()
-    ds = DataStore()
-    ds.load()
+def handle_command(args, ds: DataStore):
+    """Handle a parsed argparse `args` object using provided DataStore.
 
+    Returns a tuple `(success: bool, message: str|None)` where message may be printed by caller.
+    """
     if args.command == "list-users":
         pretty_print(ds.users)
+        return True, None
 
     elif args.command == "add-user":
         u = User(name=args.name, email=args.email)
         ds.add_user(u)
         ds.save()
-        print(f"Added user: {u}")
+        return True, f"Added user: {u}"
 
     elif args.command == "add-project":
         user = ds.find_user_by_name(args.user)
         if not user:
-            print("User not found")
-            return
+            return False, "User not found"
         due = parse_date(args.due) if args.due else None
         p = Project(title=args.title, description=args.description, due_date=due, owner_id=user.id)
         ds.add_project(p)
         ds.save()
-        print(f"Added project: {p}")
+        return True, f"Added project: {p}"
 
     elif args.command == "list-projects":
         if args.user:
             user = ds.find_user_by_name(args.user)
             if not user:
-                print("User not found")
-                return
+                return False, "User not found"
             projects = ds.get_projects_for_user(user.id)
             pretty_print(projects)
         else:
             pretty_print(ds.projects)
+        return True, None
 
     elif args.command == "add-task":
         project = ds.find_project_by_title(args.project)
         if not project:
-            print("Project not found")
-            return
+            return False, "Project not found"
         assigned_ids = []
         if args.assigned:
             for name in args.assigned:
@@ -100,53 +101,60 @@ def main():
         t = Task(title=args.title, assigned_to=assigned_ids or None)
         ds.add_task(project.id, t)
         ds.save()
-        print(f"Added task: {t}")
+        return True, f"Added task: {t}"
 
     elif args.command == "assign-contributor":
         p = ds.find_project_by_title(args.project)
         if not p:
-            print("Project not found")
-            return
+            return False, "Project not found"
         user = ds.find_user_by_name(args.assigned)
         if not user:
-            print("User not found")
-            return
+            return False, "User not found"
         ok = p.assign_contributor(int(args.task_id), user.id)
         if ok:
             ds.save()
-            print("Contributor assigned")
+            return True, "Contributor assigned"
         else:
-            print("Task not found")
+            return False, "Task not found"
 
     elif args.command == "list-tasks":
         project = ds.find_project_by_title(args.project)
         if not project:
-            print("Project not found")
-            return
+            return False, "Project not found"
         pretty_print(project.tasks)
+        return True, None
 
     elif args.command == "complete-task":
         project = ds.find_project_by_title(args.project)
         if not project:
-            print("Project not found")
-            return
+            return False, "Project not found"
         updated = ds.complete_task(project.id, args.task_id)
         if updated:
             ds.save()
-            print("Task marked complete")
+            return True, "Task marked complete"
         else:
-            print("Task not found")
+            return False, "Task not found"
 
     elif args.command == "search-projects":
         user = ds.find_user_by_name(args.user)
         if not user:
-            print("User not found")
-            return
+            return False, "User not found"
         projects = ds.get_projects_for_user(user.id)
         pretty_print(projects)
+        return True, None
 
     else:
-        parser.print_help()
+        return False, None
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    ds = DataStore()
+    ds.load()
+    ok, msg = handle_command(args, ds)
+    if msg:
+        print(msg)
 
 
 if __name__ == "__main__":

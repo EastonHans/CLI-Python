@@ -16,6 +16,17 @@ class ModelTests(unittest.TestCase):
         p2 = Project.from_dict(d)
         self.assertEqual(p2.title, p.title)
 
+    def test_user_email_validation(self):
+        with self.assertRaises(ValueError):
+            User(name="Bad", email="no-at-symbol")
+
+    def test_task_contributors_and_complete(self):
+        t = Task(title="C")
+        t.add_contributor(5)
+        self.assertIn(5, t.assigned_to)
+        t.mark_done()
+        self.assertEqual(t.status, "done")
+
 
 if __name__ == "__main__":
     unittest.main()

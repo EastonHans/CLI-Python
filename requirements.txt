@@ -1,4 +1,6 @@
 rich
 python-dateutil
 pytest
+pytest-cov
+pydantic
 

@@ -4,6 +4,8 @@ from typing import List
 from models.user import User
 from models.project import Project
 from models.task import Task
+from models.schemas import DataSchema
+from pydantic import ValidationError
 
 
 class DataStore:
@@ -11,6 +13,8 @@ class DataStore:
         self.path = path or os.path.join(os.path.dirname(__file__), "data.json")
         self.users: List[User] = []
         self.projects: List[Project] = []
+        import logging
+        self.logger = logging.getLogger(__name__)
 
     def load(self):
         """Load data from JSON file into memory, creating an empty store if needed."""
@@ -23,12 +27,24 @@ class DataStore:
         except Exception:
             self._create_empty()
             return
+        # Validate structure with pydantic schema; if invalid, back up file and reset
+        try:
+            DataSchema.parse_obj(d)
+        except ValidationError:
+            # backup bad file
+            bak = self.path + ".bak"
+            try:
+                os.replace(self.path, bak)
+            except Exception:
+                pass
+            self._create_empty()
+            return
         self.users = [User.from_dict(u) for u in d.get("users", [])]
         self.projects = [Project.from_dict(p) for p in d.get("projects", [])]
 
     def save(self):
         """Persist current in-memory users and projects to the JSON file using atomic replace."""
-        out = {"users": [u.to_dict() for u in self.users], "projects": [p.to_dict() for p in self.projects]}
+        out = {"version": 1, "users": [u.to_dict() for u in self.users], "projects": [p.to_dict() for p in self.projects]}
         dirpath = os.path.dirname(self.path)
         if dirpath and not os.path.exists(dirpath):
             os.makedirs(dirpath, exist_ok=True)
