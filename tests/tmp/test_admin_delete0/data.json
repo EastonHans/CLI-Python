@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": 1,
+      "name": "Owner",
+      "email": "o@e.com",
+      "project_ids": []
+    },
+    {
+      "id": 2,
+      "name": "Root",
+      "email": "r@e.com",
+      "project_ids": []
+    }
+  ],
+  "projects": []
+}

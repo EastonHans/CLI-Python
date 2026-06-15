@@ -1,5 +1,10 @@
+from __future__ import annotations
+
 from .user import User
-from data.storage import DataStore
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from data.storage import DataStore
 
 
 class Admin(User):
