@@ -10,3 +10,6 @@ data/data.json
 dist/
 build/
 __pypackages__/
+.pytest_cache/
+tests/tmp/
+.coverage

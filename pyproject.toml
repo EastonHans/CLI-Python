@@ -8,5 +8,9 @@ version = "1.0.0"
 description = "CLI project tracker for Moringa module"
 authors = [ { name = "Student", email = "student@example.com" } ]
 
+[tool.pytest.ini_options]
+addopts = "--basetemp=tests/tmp"
+norecursedirs = ["tests/tmp", ".venv", ".git"]
+
 [tool.black]
 line-length = 88

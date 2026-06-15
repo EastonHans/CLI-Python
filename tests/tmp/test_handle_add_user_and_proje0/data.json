@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": 5,
+      "name": "TM",
+      "email": "tm@example.com",
+      "project_ids": [
+        3
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": 3,
+      "title": "ProjX",
+      "description": "",
+      "due_date": null,
+      "owner_id": 5,
+      "tasks": [
+        {
+          "id": 1,
+          "title": "Task1",
+          "status": "open",
+          "assigned_to": []
+        }
+      ]
+    }
+  ]
+}

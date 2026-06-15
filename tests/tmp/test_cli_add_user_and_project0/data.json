@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": 3,
+      "name": "CliUser",
+      "email": "cli@example.com",
+      "project_ids": [
+        2
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": 2,
+      "title": "Proj1",
+      "description": "",
+      "due_date": null,
+      "owner_id": 3,
+      "tasks": []
+    }
+  ]
+}
